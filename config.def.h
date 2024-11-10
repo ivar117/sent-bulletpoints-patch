@@ -54,3 +54,10 @@ static Filter filters[] = {
 	{ "\\.ff.bz2$", "bunzip2" },
 	{ "\\.[a-z0-9]+$", "2ff" },
 };
+
+static const int check_bulletpoints = 1;
+
+static Bulletpoint bulletpoints[] = {
+    { '*', "•" },
+    { '>', "▸" },
+};

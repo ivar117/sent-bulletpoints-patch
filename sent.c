@@ -49,6 +49,11 @@ typedef struct {
 } Filter;
 
 typedef struct {
+    char origchar;
+    char *bulletsymbol;
+} Bulletpoint;
+
+typedef struct {
 	unsigned int linecount;
 	char **lines;
 	Image *img;
@@ -406,10 +411,20 @@ reload(const Arg *arg)
 }
 
 void
+add_bulletpoint(Slide *s, const char *bulletsymbol) {
+    int updatedlength = strlen(bulletsymbol) + strlen(s->lines[s->linecount]);
+    char updatedline[updatedlength];
+
+    memmove(&s->lines[s->linecount][0], &s->lines[s->linecount][1], strlen(s->lines[s->linecount]));
+    snprintf(updatedline, sizeof(updatedline), "%s%s", bulletsymbol, s->lines[s->linecount]);
+    strcpy(s->lines[s->linecount], updatedline);
+}
+
+void
 load(FILE *fp)
 {
 	static size_t size = 0;
-	size_t blen, maxlines;
+	size_t blen, maxlines, i;
 	char buf[BUFSIZ], *p;
 	Slide *s;
 
@@ -449,6 +464,13 @@ load(FILE *fp)
 				die("sent: Unable to strdup:");
 			if (s->lines[s->linecount][blen-1] == '\n')
 				s->lines[s->linecount][blen-1] = '\0';
+
+            /* check for bullet points */
+            if (check_bulletpoints) {
+                for (i = 0; i < LEN(bulletpoints); i++)
+                    if (s->lines[s->linecount][0] == bulletpoints[i].origchar && s->lines[s->linecount][1] == ' ')
+                        add_bulletpoint(s, bulletpoints[i].bulletsymbol);
+            }
 
 			/* mark as image slide if first line of a slide starts with @ */
 			if (s->linecount == 0 && s->lines[0][0] == '@')
